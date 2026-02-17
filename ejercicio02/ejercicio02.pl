@@ -8,9 +8,8 @@ villain_list([
     villain(bane, 240, [fuerza])
 ]).
 
-usar_poder(power_list, Power, EnergiaMaxima):-
-    power(Power, _, Cost),
-    EnergiaMaxima is EnergiaMaxima - Cost.
+usar_poder(power(Name, Damage, Cost), EnergiaMaxima, EnergiaRestante):-
+    EnergiaRestante is EnergiaMaxima - Cost.
 
 %dfs base
 dfs(EstadoActual, _, [EstadoActual]):-
@@ -21,12 +20,12 @@ dfs(EstadoActual, Visitados, [EstadoActual | CaminoRestante]):-
     not(member(EstadoSiguiente, Visitados)),
     dfs(SiguienteEstado, [SiguienteEstado | Visitados], CaminoRestante).
 
-siguiente_estado(estado([villian(_,Vida, Debilidades) | VillanosRestantes],[power(Name, Damage, Cost)| PoderesRestantes],EnergiaInicial), 
+siguiente_estado(estado([villian(_,Vida, Debilidades) | VillanosRestantes],[power(Name, Damage, Cost)| PoderesRestantes], EnergiaInicial), 
                  estado(VillanosRestantes, PoderesRestantes, NuevaEnergia)):-
-    EnergiaIniial >= Cost,
-    
-    
-siguiente_estado()
+    EnergiaInicial >= Cost,
+    member(Debilidades, Name),
+    Damage >= Vida,
+    usar_poder(power(Name),Damage, Cost, EnergiaInicial, NuevaEnergia).
 
 batman_can_win(EnergiaMaxima):-
     power_list(Superpoderes),
