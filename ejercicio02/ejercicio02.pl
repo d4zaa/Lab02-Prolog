@@ -8,28 +8,33 @@ villain_list([
     villain(bane, 240, [fuerza])
 ]).
 
-usar_poder(power(Name, Damage, Cost), EnergiaMaxima, EnergiaRestante):-
+meta(estado([], _, _)).
+
+usar_poder(power(_, _, Cost), EnergiaMaxima, EnergiaRestante):-
     EnergiaRestante is EnergiaMaxima - Cost.
 
 %dfs base
 dfs(EstadoActual, _, [EstadoActual]):-
-    meta(EstadoActual).
+    meta(EstadoActual), !.
 %dfs recursivo
 dfs(EstadoActual, Visitados, [EstadoActual | CaminoRestante]):-
     siguiente_estado(EstadoActual, EstadoSiguiente),
     not(member(EstadoSiguiente, Visitados)),
-    dfs(SiguienteEstado, [SiguienteEstado | Visitados], CaminoRestante).
+    dfs(EstadoSiguiente, [EstadoSiguiente | Visitados], CaminoRestante).
 
-siguiente_estado(estado([villian(_,Vida, Debilidades) | VillanosRestantes],[power(Name, Damage, Cost)| PoderesRestantes], EnergiaInicial), 
-                 estado(VillanosRestantes, PoderesRestantes, NuevaEnergia)):-
+siguiente_estado(
+		estado([villain(_,Vida, Debilidades) | VillanosRestantes], Poderes, EnergiaInicial), 
+		estado(VillanosRestantes, PoderesRestantes, NuevaEnergia)):-
+    member(power(Name, Damage, Cost), Poderes),
     EnergiaInicial >= Cost,
-    member(Debilidades, Name),
     Damage >= Vida,
-    usar_poder(power(Name),Damage, Cost, EnergiaInicial, NuevaEnergia).
+    member(Name, Debilidades),
+    select(power(Name, Damage, Cost), Poderes, PoderesRestantes),
+    usar_poder(power(Name, Damage, Cost), EnergiaInicial, NuevaEnergia).
 
 batman_can_win(EnergiaMaxima):-
     power_list(Superpoderes),
     villain_list(Villanos),
     % El estado inicial contiene todos los villanos, todos los poderes y la energía máxima.
     EstadoInicial = estado(Villanos, Superpoderes, EnergiaMaxima),
-    dfs(EstadoInicial, [EstadoInicial]). %dfs(Estado,Visitados)
+    dfs(EstadoInicial, [EstadoInicial], _). %dfs(Estado,Visitados)
